@@ -2,7 +2,7 @@ expressions
 ===========
 
 Playing with Java8. Here's Try as an Expression
-
+```java
     @Test public void should_return_try_value() {
         String result = Try(() -> {
             return "try";
@@ -12,3 +12,4 @@ Playing with Java8. Here's Try as an Expression
 
         assertEquals("try", result);
     }
+```
