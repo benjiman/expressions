@@ -74,12 +74,8 @@ public class TryAsExpressionTest {
             Try(() -> {
                 if (true) throw new SubException();
                 return "try";
-            }).Catch(SubException.class, e -> {
-                return "firstcatch";
-            }).Catch(SuperException.class, e -> {
-                return "secondcatch";
             }).apply();
-
+            fail("Should have thrown");
         } catch (RuntimeException e) {
             assertEquals(SubException.class, e.getCause().getClass());
         }
