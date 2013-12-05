@@ -4,6 +4,17 @@ import java.util.Arrays;
 
 public class InstanceOfMethodReference {
 
+    public static void main(String... args) throws Exception {
+        Object foo = "foo";
+        Object bar = 5;
+        Integer result =
+            when(foo)
+                .is(String.class)
+                .then(String::compareTo).apply("other");
+
+        System.out.println(result);
+    }
+
     interface NoArg<T,U> {
         U apply(T instance);
     }
@@ -24,17 +35,6 @@ public class InstanceOfMethodReference {
         public R apply(ARG1 arg1) {
             return action.apply(instance, arg1);
         }
-    }
-
-    public static void main(String... args) throws Exception {
-        Object foo = "foo";
-        Object bar = 5;
-        Integer result =
-            when(foo)
-                .is(String.class)
-                .then(String::compareTo).apply("other");
-
-        System.out.println(result);
     }
 
     static interface When {
