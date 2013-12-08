@@ -17,6 +17,17 @@ public class Coalesce {
             .orElse(null);
     }
 
+    interface AnotherSupplier<T> extends Supplier<T> {}
+
+    public static <T> Optional<T> coalesce(AnotherSupplier<Optional<T>>... ts) {
+        return asList(ts)
+                .stream()
+                .map(t -> t.get())
+                .filter(t -> t.isPresent())
+                .findFirst()
+                .orElse(Optional.<T>empty());
+    }
+
     public static <T> Optional<T> coalesce(Optional<T>... ts) {
         return asList(ts)
             .stream()

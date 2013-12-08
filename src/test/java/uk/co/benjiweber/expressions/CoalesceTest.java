@@ -40,9 +40,9 @@ public class CoalesceTest {
     public void should_be_able_to_use_optionals() {
         assertEquals("bob",
             coalesce(
-                Optional.<String>empty(),
-                Optional.of(new Person("bob").name()),
-                Optional.of(new Person("barbara").name())
+                () -> Optional.<String>empty(),
+                () -> Optional.of(new Person("bob").name()),
+                () -> Optional.of(new Person("barbara").name())
             ).get()
         );
     }
