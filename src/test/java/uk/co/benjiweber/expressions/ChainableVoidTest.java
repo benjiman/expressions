@@ -3,6 +3,7 @@ package uk.co.benjiweber.expressions;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static uk.co.benjiweber.expressions.ChainableVoid.chain;
 
@@ -13,10 +14,16 @@ public class ChainableVoidTest {
         Duck duck = chain(new Duck())
             .invoke(Duck::quack)
             .invoke(Duck::waddle)
+            .invoke(Duck::setName, "ducky")
+            .invoke(Duck::setFooBar, "foo", 5)
             .unwrap();
 
         assertTrue(duck.quackCalled);
         assertTrue(duck.waddleCalled);
+        assertEquals("ducky", duck.name);
+        assertEquals("foo", duck.foo);
+        assertEquals(Integer.valueOf(5), duck.bar);
+
     }
 
     static class Duck {
@@ -29,6 +36,18 @@ public class ChainableVoidTest {
         public void waddle() {
             waddleCalled = true;
             System.out.println("waddle");
+        }
+
+        String name;
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        String foo;
+        Integer bar;
+        public void setFooBar(String foo, Integer bar) {
+            this.foo = foo;
+            this.bar = bar;
         }
     }
 }
