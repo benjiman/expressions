@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class InstanceOfMethodReference {
 
     public static void main(String... args) throws Exception {
-        Object foo = "foo";
+        Object foo = "curry_and_partially_apply";
         Object bar = 5;
         Integer result =
             when(foo)

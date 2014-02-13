@@ -18,7 +18,7 @@ public class InstanceOfTest {
                 .then(s -> s.substring(1))
                 .otherwise("incorrect");
 
-        assertEquals("foo", result);
+        assertEquals("curry_and_partially_apply", result);
     }
 
     @Test
@@ -40,7 +40,7 @@ public class InstanceOfTest {
                 .then(s -> s.substring(1))
                 .optional();
 
-        assertEquals("foo", result.get());
+        assertEquals("curry_and_partially_apply", result.get());
     }
 
     @Test

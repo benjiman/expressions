@@ -15,13 +15,13 @@ public class ChainableVoidTest {
             .invoke(Duck::quack)
             .invoke(Duck::waddle)
             .invoke(Duck::setName, "ducky")
-            .invoke(Duck::setFooBar, "foo", 5)
+            .invoke(Duck::setFooBar, "curry_and_partially_apply", 5)
             .unwrap();
 
         assertTrue(duck.quackCalled);
         assertTrue(duck.waddleCalled);
         assertEquals("ducky", duck.name);
-        assertEquals("foo", duck.foo);
+        assertEquals("curry_and_partially_apply", duck.foo);
         assertEquals(Integer.valueOf(5), duck.bar);
 
     }
