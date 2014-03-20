@@ -10,16 +10,21 @@ public class PropertyTest {
 
     static class Person {
         private String name;
-        public Property<String> Name = get(() -> name).set(value -> this.name = value);
+        public final Property<String> Name = get(() -> name).set(value -> this.name = value);
     }
 
     @Test
     public void property() {
         Person person = new Person();
         assertNull(person.Name.get());
+        assertNull(person.name);
+
         person.Name.set("Bob");
         assertEquals("Bob", person.Name.get());
+        assertEquals("Bob", person.name);
+
         person.Name.set("Bill");
         assertEquals("Bill", person.Name.get());
+        assertEquals("Bill", person.name);
     }
 }
