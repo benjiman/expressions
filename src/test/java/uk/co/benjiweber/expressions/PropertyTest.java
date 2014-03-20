@@ -47,15 +47,48 @@ public class PropertyTest {
         assertEquals("Matt", got);
     }
 
-    private void takesAProperty(Property<String> property, String newValue) {
+    @Test
+    public void property_with_behaviour() {
+        TimePeriod period = new TimePeriod();
+        period.Hours.set(2D);
+        assertEquals(7200D, period.seconds, 0);
+        assertEquals(2D, period.Hours.get(), 0);
+
+        period.Hours.set(3D);
+        assertEquals(10800D, period.seconds, 0);
+        assertEquals(3D, period.Hours.get(), 0);
+    }
+
+    @Test
+    public void pass_around_references_to_hours() {
+        TimePeriod period = new TimePeriod();
+        period.Hours.set(2D);
+
+        takesAProperty(period.Hours, 3D);
+        assertEquals(3D, period.Hours.get(), 0);
+
+        takesASetter(period.Hours::set,  2D);
+        assertEquals(2D, period.Hours.get(), 0);
+
+        Double got = takesAGetter(period.Hours::get);
+        assertEquals(2D, got, 0);
+    }
+
+    static class TimePeriod {
+        private double seconds;
+
+        public final Property<Double> Hours = get(() -> seconds / 3600).set(value -> seconds = value * 3600);
+    }
+
+    private <T> void takesAProperty(Property<T> property, T newValue) {
         property.set(newValue);
     }
 
-    private void takesASetter(Consumer<String> setter, String newValue) {
+    private <T> void takesASetter(Consumer<T> setter, T newValue) {
         setter.accept(newValue);
     }
 
-    private String takesAGetter(Supplier<String> getter) {
+    private <T> T takesAGetter(Supplier<T> getter) {
         return getter.get();
     }
 }
