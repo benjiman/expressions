@@ -1,6 +1,9 @@
 package uk.co.benjiweber.expressions;
 
 import org.junit.Test;
+import uk.co.benjiweber.expressions.properties.Property;
+import uk.co.benjiweber.expressions.properties.Readonly;
+import uk.co.benjiweber.expressions.properties.Writeonly;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -8,13 +11,16 @@ import java.util.function.Supplier;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
-import static uk.co.benjiweber.expressions.Property.get;
+import static uk.co.benjiweber.expressions.properties.Property.get;
+import static uk.co.benjiweber.expressions.properties.Property.set;
 
 public class PropertyTest {
 
     static class Person {
         private String name;
-        public final Property<String> Name = get(() -> name).set(value -> this.name = value);
+        public final Property<String> Name = get(() -> name).set(value -> name = value);
+        public final Readonly<String> ReadOnlyName = get(() -> name).readonly();
+        public final Writeonly<String> WriteOnlyname = set(value -> name = value);
     }
 
     @Test
@@ -30,6 +36,10 @@ public class PropertyTest {
         person.Name.set("Bill");
         assertEquals("Bill", person.Name.get());
         assertEquals("Bill", person.name);
+        assertEquals("Bill", person.ReadOnlyName.get());
+
+        person.WriteOnlyname.set("Alice");
+        assertEquals("Alice", person.Name.get());
     }
 
     @Test
