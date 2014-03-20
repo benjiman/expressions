@@ -43,4 +43,14 @@ public class Property<T> {
         return getter.get();
     }
 
+    public Named<T> named() {
+        return new GuessesName<T>(this.getter, this.setter);
+    }
+
+
+    public Named<T> named(String name) {
+        return new ExplicitName<T>(this.getter, this.setter, name);
+    }
+
+
 }

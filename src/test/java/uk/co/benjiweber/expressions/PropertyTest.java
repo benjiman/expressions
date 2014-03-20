@@ -1,6 +1,7 @@
 package uk.co.benjiweber.expressions;
 
 import org.junit.Test;
+import uk.co.benjiweber.expressions.properties.Named;
 import uk.co.benjiweber.expressions.properties.Property;
 import uk.co.benjiweber.expressions.properties.Readonly;
 import uk.co.benjiweber.expressions.properties.Writeonly;
@@ -84,10 +85,38 @@ public class PropertyTest {
         assertEquals(2D, got, 0);
     }
 
+
+
     static class TimePeriod {
         private double seconds;
 
         public final Property<Double> Hours = get(() -> seconds / 3600).set(value -> seconds = value * 3600);
+    }
+
+    public static class ExplicitPropertyNames {
+        private String foo = "foo";
+        public final Named<String> Foo = get(() -> foo).set(value -> foo = value).named("Foo");
+        public final Named<String> Bar = get(() -> foo).set(value -> foo = value).named("Bar");
+    }
+
+    @Test
+    public void explicit_named_property() {
+        ExplicitPropertyNames o = new ExplicitPropertyNames();
+        assertEquals("Foo", o.Foo.name());
+        assertEquals("Bar", o.Bar.name());
+    }
+
+    public static class GuessablePropertyNames {
+        private String foo = "foo";
+        public final Named<String> Foo = get(() -> foo).set(value -> foo = value).named();
+        public final Named<String> Bar = get(() -> foo).set(value -> foo = value).named();
+    }
+
+    @Test
+    public void guessable_named_property() {
+        GuessablePropertyNames o = new GuessablePropertyNames();
+        assertEquals("Foo", o.Foo.name());
+        assertEquals("Bar", o.Bar.name());
     }
 
     private <T> void takesAProperty(Property<T> property, T newValue) {
