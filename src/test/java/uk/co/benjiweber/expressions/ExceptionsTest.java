@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static uk.co.benjiweber.expressions.Exceptions.unchecked;
+import static uk.co.benjiweber.expressions.Exceptions.wrappingAll;
+import static uk.co.benjiweber.expressions.Exceptions.wrappingChecked;
 
 public class ExceptionsTest {
     @Test
@@ -32,8 +34,72 @@ public class ExceptionsTest {
         unchecked(() -> Example.voidMethodThatThrowsACheckedException(THROW));
     }
 
+    @Test(expected = Wrapped.class)
+    public void wrapping_checked() throws Wrapped {
+        wrappingChecked(() -> Example.methodThatThrowsCheckedException(THROW)).in(Wrapped::new);
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void wrapping_checked_should_not_wrap_npe() throws Wrapped {
+        wrappingChecked(() -> Example.methodThatThrowsNPE(THROW)).in(Wrapped::new);
+    }
+
+
+    @Test
+    public void wrapping_checked_should_return_value_when_no_exception() throws Wrapped {
+        String foo = wrappingChecked(() -> Example.methodThatThrowsCheckedException(DO_NOT_THROW)).in(Wrapped::new);
+        assertEquals("foo", foo);
+    }
+
+    @Test
+    public void wrapping_all_should_return_value_when_no_exception() throws Wrapped {
+        String foo = wrappingAll(() -> Example.methodThatThrowsCheckedException(DO_NOT_THROW)).in(Wrapped::new);
+        assertEquals("foo", foo);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void wrapping_checked_should_not_wrap_runtime_exception() throws Wrapped {
+        wrappingChecked(() -> Example.methodThatThrowsRuntimeException(THROW)).in(Wrapped::new);
+    }
+
+    @Test(expected = Wrapped.class)
+    public void wrapping_all_should_wrap_npe() throws Wrapped {
+        wrappingAll(() -> Example.methodThatThrowsNPE(THROW)).in(Wrapped::new);
+    }
+
+    @Test(expected = Wrapped.class)
+    public void wrapping_all_should_wrap_runtime_exception() throws Wrapped {
+        wrappingAll(() -> Example.methodThatThrowsRuntimeException(THROW)).in(Wrapped::new);
+    }
+
+    @Test(expected = Wrapped.class)
+    public void wrapping_checked_using_supplier() throws Wrapped {
+        wrappingChecked(() -> Example.methodThatThrowsCheckedException(THROW)).in(() -> new Wrapped(null));
+    }
+
+    @Test(expected = Wrapped.class)
+    public void wrapping_checked_using_reflection() throws Wrapped {
+        wrappingChecked(() -> Example.methodThatThrowsCheckedException(THROW)).in(Wrapped.class);
+    }
+
+    @Test(expected = Wrapped.class)
+    public void wrapping_all_using_supplier() throws Wrapped {
+        wrappingAll(() -> Example.methodThatThrowsCheckedException(THROW)).in(() -> new Wrapped(null));
+    }
+
+    @Test(expected = Wrapped.class)
+    public void wrapping_all_using_reflection() throws Wrapped {
+        wrappingAll(() -> Example.methodThatThrowsCheckedException(THROW)).in(Wrapped.class);
+    }
+
     static class ACheckedExceptionIDontHaveAGoodWayToDealWith extends Exception {
 
+    }
+
+    static class Wrapped extends Exception {
+        public Wrapped(Exception e) {
+            super(e);
+        }
     }
 
     static boolean THROW = true;
@@ -52,6 +118,16 @@ public class ExceptionsTest {
 
         public static void methodThatThrowsCheckedExceptionNoParams() throws ACheckedExceptionIDontHaveAGoodWayToDealWith {
 
+        }
+
+        public static String methodThatThrowsNPE(boolean throwPlease) {
+            if(throwPlease) throw new NullPointerException();
+            return "not_an_npe";
+        }
+
+        public static String methodThatThrowsRuntimeException(boolean throwPlease) {
+            if(throwPlease) throw new NullPointerException();
+            return "not_an_exception";
         }
     }
 
