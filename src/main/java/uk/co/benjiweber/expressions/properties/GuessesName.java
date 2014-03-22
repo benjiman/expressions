@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
-import static uk.co.benjiweber.expressions.Exceptions.unchecked;
+import static uk.co.benjiweber.expressions.exceptions.Exceptions.unchecked;
 
 public class GuessesName<T> extends Property<T> implements Named<T> {
 

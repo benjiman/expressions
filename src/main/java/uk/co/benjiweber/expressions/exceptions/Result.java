@@ -120,7 +120,6 @@ public interface Result<T> {
         public Function<Result<T>, Result<R>> mapper() {
             return t -> {
                 if (t instanceof Success) return t.map(successMapper);
-                // use a map
                 for (ExceptionHandler handler : this.exceptionHandlers) {
                     Result<R> r = t.map(handler.type, handler.function);
                     if (r instanceof Success) return r;
