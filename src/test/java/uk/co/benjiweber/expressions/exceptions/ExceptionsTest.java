@@ -1,11 +1,19 @@
-package uk.co.benjiweber.expressions;
+package uk.co.benjiweber.expressions.exceptions;
 
 import org.junit.Test;
+import uk.co.benjiweber.expressions.exceptions.Result;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static uk.co.benjiweber.expressions.Exceptions.unchecked;
-import static uk.co.benjiweber.expressions.Exceptions.wrappingAll;
-import static uk.co.benjiweber.expressions.Exceptions.wrappingChecked;
+import static org.junit.Assert.assertTrue;
+import static uk.co.benjiweber.expressions.exceptions.Exceptions.unchecked;
+import static uk.co.benjiweber.expressions.exceptions.Exceptions.wrappingAll;
+import static uk.co.benjiweber.expressions.exceptions.Exceptions.wrappingChecked;
 
 public class ExceptionsTest {
     @Test
@@ -92,6 +100,64 @@ public class ExceptionsTest {
         wrappingAll(() -> Example.methodThatThrowsCheckedException(THROW)).in(Wrapped.class);
     }
 
+    @Test
+    public void streams_and_exceptions() {
+        List<String> result =
+            asList("foo", "bar", "baz", "boooo")
+                .stream()
+                .map(Result.wrapReturn(Example::duplicatesShortStrings))
+                .map(Result.wrap(s -> s.toUpperCase()))
+                .filter(Result::success)
+                .map(Result::unwrap)
+                .collect(Collectors.toList());
+
+        assertEquals(asList("FOOFOO","BARBAR","BAZBAZ"), result);
+    }
+
+    @Test
+    public void streams_and_exceptions_exceptions_mid_stream() {
+        List<String> result =
+            asList("foo", "bar", "baz", "UPR", "boooo")
+                .stream()
+                .map(Result.wrapReturn(Example::duplicatesShortStrings))
+                .map(Result.wrapExceptional(Example::uppercasesStrings))
+                .filter(Result::success)
+                .map(Result::unwrap)
+                .collect(Collectors.toList());
+
+        assertEquals(asList("FOOFOO","BARBAR","BAZBAZ"), result);
+    }
+
+    @Test
+    public void streams_and_exceptions_exceptions_map_failure_cases() {
+        List<String> result =
+            asList("foo", "bar", "baz", "UPR", "boooo")
+                .stream()
+                .map(Result.wrapReturn(Example::duplicatesShortStrings))
+                .map(Result.wrapExceptional(Example::uppercasesStrings))
+                .map(Result.onSuccess(Function.<String>identity()).on(InputTooLongException.class, s -> "OhNoes").mapper())
+                .filter(Result::success)
+                .map(Result::unwrap)
+                .collect(Collectors.toList());
+
+        assertEquals(asList("FOOFOO","BARBAR","BAZBAZ", "OhNoes"), result);
+    }
+
+    @Test
+    public void streams_and_exceptions_exceptions_throw_unfiltered_failures() {
+        try {
+            asList("foo", "bar", "baz", "UPR", "boooo")
+                .stream()
+                .map(Result.wrapReturn(Example::duplicatesShortStrings))
+                .map(Result.wrapExceptional(Example::uppercasesStrings))
+                .map(Result::unwrap)
+                .collect(Collectors.toList());
+        } catch (RuntimeException e) {
+            assertTrue(e.getCause() instanceof InputContainsUppercaseException);
+        }
+    }
+
+
     static class ACheckedExceptionIDontHaveAGoodWayToDealWith extends Exception {
 
     }
@@ -100,6 +166,14 @@ public class ExceptionsTest {
         public Wrapped(Exception e) {
             super(e);
         }
+    }
+
+    static class InputTooLongException extends Exception {
+
+    }
+
+    static class InputContainsUppercaseException extends Exception {
+
     }
 
     static boolean THROW = true;
@@ -128,6 +202,16 @@ public class ExceptionsTest {
         public static String methodThatThrowsRuntimeException(boolean throwPlease) {
             if(throwPlease) throw new NullPointerException();
             return "not_an_exception";
+        }
+
+        public static String duplicatesShortStrings(String input) throws InputTooLongException {
+            if (input.length() > 3) throw new InputTooLongException();
+            return input + input;
+        }
+
+        public static String uppercasesStrings(String input) throws InputContainsUppercaseException {
+            if (input.matches(".*?[A-Z].*")) throw new InputContainsUppercaseException();
+            return input.toUpperCase();
         }
     }
 

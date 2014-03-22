@@ -1,4 +1,4 @@
-package uk.co.benjiweber.expressions;
+package uk.co.benjiweber.expressions.exceptions;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.function.Function;

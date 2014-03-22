@@ -1,6 +1,6 @@
 package uk.co.benjiweber.expressions;
 
-import static uk.co.benjiweber.expressions.Exceptions.unchecked;
+import static uk.co.benjiweber.expressions.exceptions.Exceptions.unchecked;
 
 public class ChainableVoid<T> {
     private final T obj;
