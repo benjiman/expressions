@@ -15,7 +15,7 @@ public class CaseTreeTest {
             node(5,
                 node(1, leaf, leaf),
                 node(3, leaf,
-                        node(4, leaf, leaf)
+                    node(4, leaf, leaf)
                 )
             );
 
@@ -24,8 +24,8 @@ public class CaseTreeTest {
 
     int countNodes(Tree tree) {
         return tree.match()
-                .when(Leaf.class, n -> 0)
-                .when(Node.class, n -> 1 + countNodes(n.left()) + countNodes(n.right()));
+            .when(Leaf.class, n -> 0)
+            .when(Node.class, n -> 1 + countNodes(n.left()) + countNodes(n.right()));
     }
 }
 
