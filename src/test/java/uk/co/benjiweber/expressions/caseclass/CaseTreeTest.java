@@ -1,11 +1,11 @@
-package uk.co.benjiweber.expressions;
+package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
 import uk.co.benjiweber.expressions.caseclass.Case2;
 
 import static org.junit.Assert.assertEquals;
-import static uk.co.benjiweber.expressions.CaseTreeTest.Leaf.leaf;
-import static uk.co.benjiweber.expressions.CaseTreeTest.Node.node;
+import static uk.co.benjiweber.expressions.caseclass.CaseTreeTest.Leaf.leaf;
+import static uk.co.benjiweber.expressions.caseclass.CaseTreeTest.Node.node;
 
 public class CaseTreeTest {
 

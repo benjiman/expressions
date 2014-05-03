@@ -1,6 +1,8 @@
-package uk.co.benjiweber.expressions;
+package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
+import uk.co.benjiweber.expressions.EqualsHashcode;
+import uk.co.benjiweber.expressions.ToString;
 import uk.co.benjiweber.expressions.caseclass.Case2;
 
 import java.util.Arrays;
@@ -8,8 +10,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
-import static uk.co.benjiweber.expressions.CaseListTest.EmptyList.empty;
-import static uk.co.benjiweber.expressions.CaseListTest.Tail.list;
+import static uk.co.benjiweber.expressions.caseclass.CaseListTest.EmptyList.empty;
+import static uk.co.benjiweber.expressions.caseclass.CaseListTest.Tail.list;
 import static uk.co.benjiweber.expressions.caseclass.Case3.erasesTo;
 
 public class CaseListTest {

@@ -1,6 +1,8 @@
-package uk.co.benjiweber.expressions;
+package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
+import uk.co.benjiweber.expressions.EqualsHashcode;
+import uk.co.benjiweber.expressions.ToString;
 import uk.co.benjiweber.expressions.caseclass.Case;
 import uk.co.benjiweber.expressions.caseclass.MatchesAny;
 
@@ -9,7 +11,7 @@ import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static uk.co.benjiweber.expressions.CaseConstructorTest.Person.person;
+import static uk.co.benjiweber.expressions.caseclass.CaseConstructorTest.Person.person;
 import static uk.co.benjiweber.expressions.caseclass.MatchesAny._;
 
 public class CaseConstructorTest {

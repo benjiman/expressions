@@ -1,4 +1,4 @@
-package uk.co.benjiweber.expressions;
+package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
 import uk.co.benjiweber.expressions.caseclass.Case3;
