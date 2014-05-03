@@ -12,9 +12,12 @@ public class CaseTreeTest {
     @Test
     public void counting_nodes_example() {
         Tree tree =
-            node(5,
+            node(
+                5,
                 node(1, leaf, leaf),
-                node(3, leaf,
+                node(
+                    3,
+                    leaf,
                     node(4, leaf, leaf)
                 )
             );
