@@ -1,20 +1,57 @@
 package uk.co.benjiweber.expressions.caseclass;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import static java.util.Arrays.asList;
 
 public interface Case<T> {
     default MatchBuilder<T> match() {
         return new MatchBuilder<T>() {
             public <R> MatchBuilderR<T, R> when(T value, Function<T, R> f) {
-                return new MatchBuilderR<T, R>(Arrays.asList(MatchDefinition.create(value,f)), Case.this);
+                return new MatchBuilderR<T, R>(asList(MatchDefinition.create(value, f)), Case.this);
+            }
+            public <R, A, B> MatchBuilderR<T, R> when(TwoMissing<T, A, B> value, BiFunction<A, B, R> f) {
+                Function<T,R> valueExtractor = t -> f.apply(value.prop1((T)Case.this), value.prop2((T)Case.this));
+                return new MatchBuilderR<T, R>(asList(MatchDefinition.create(value.original(), valueExtractor)), Case.this);
+            }
+            public <R, A, B> MatchBuilderR<T, R> when(OneMissing<T, A> value, Function<A, R> f) {
+                Function<T,R> valueExtractor = t -> f.apply(value.prop1((T) Case.this));
+                return new MatchBuilderR<T, R>(asList(MatchDefinition.create(value.original(), valueExtractor)), Case.this);
             }
         };
     }
 
+    default <A> OneMissing<T,A> missing(Function<T,A> prop1) {
+        return new OneMissing<T, A>() {
+            public A prop1(T extractFrom) { return prop1.apply(extractFrom); }
+            public T original() { return (T)Case.this; }
+        };
+    }
+
+    default <A,B> TwoMissing<T,A,B> missing(Function<T,A> prop1, Function<T,B> prop2) {
+        return new TwoMissing<T, A, B>() {
+            public A prop1(T extractFrom) { return prop1.apply(extractFrom); }
+            public B prop2(T extractFrom) { return prop2.apply(extractFrom); }
+            public T original() { return (T)Case.this; }
+        } ;
+    }
+
+    interface TwoMissing<T,A,B> {
+        A prop1(T extractFrom);
+        B prop2(T extractFrom);
+        T original();
+    }
+    interface OneMissing<T,A> {
+        A prop1(T extractFrom);
+        T original();
+    }
+
     public interface MatchBuilder<T> {
         <R> MatchBuilderR<T,R> when(T value, Function<T, R> f);
+        <R,A,B> MatchBuilderR<T,R> when(TwoMissing<T,A,B> value, BiFunction<A,B,R> f);
     }
 
     interface MatchDefinition<T,R> {
@@ -44,6 +81,18 @@ public interface Case<T> {
 
         public MatchBuilderR<T,R> when(T value, Function<T,R> f) {
             cases.add(MatchDefinition.create(value, f));
+            return this;
+        }
+
+        public <A> MatchBuilderR<T,R> when(OneMissing<T,A> value, Function<A,R> f) {
+            Function<T,R> valueExtractor = t -> f.apply(value.prop1((T)this.value));
+            cases.add(MatchDefinition.create(value.original(), valueExtractor));
+            return this;
+        }
+
+        public <A,B> MatchBuilderR<T,R> when(TwoMissing<T,A,B> value, BiFunction<A,B,R> f) {
+            Function<T,R> valueExtractor = t -> f.apply(value.prop1((T)this.value), value.prop2((T)this.value));
+            cases.add(MatchDefinition.create(value.original(), valueExtractor));
             return this;
         }
 
