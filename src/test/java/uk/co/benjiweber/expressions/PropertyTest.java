@@ -25,6 +25,40 @@ public class PropertyTest {
     }
 
     @Test
+    public void mixingPaint() {
+        Paint red = Paint.create(100,0,0);
+        Paint green = Paint.create(0,100,0);
+
+        Paint mixed = red.mix(green);
+
+        assertEquals(100, mixed.red());
+        assertEquals(100, mixed.green());
+    }
+
+    @Test
+    public void paintEquals() {
+        Paint red = Paint.create(100,0,0);
+        Paint green = Paint.create(0,100,0);
+
+        Paint mixed1 = red.mix(green);
+        Paint mixed2 = green.mix(red);
+
+        assertEquals(mixed1, mixed2);
+        assertNotEquals(red, green);
+        assertNotEquals(red, mixed1);
+    }
+
+    @Test
+    public void paintToString() {
+        Paint red = Paint.create(100,0,0);
+        Paint green = Paint.create(0,100,0);
+
+        assertEquals("{100, 0, 0}", red.toString());
+        assertEquals("{0, 100, 0}", green.toString());
+    }
+
+
+    @Test
     public void property() {
         Person person = new Person();
         assertNull(person.Name.get());
