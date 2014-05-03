@@ -29,6 +29,11 @@ public interface Case3<T,U,V> {
     public interface MatchBuilderTwo<T,U,V,R> {
         R when(Class<V> cls, Function<V,R> f);
     }
+
+
+    static <T,U extends T> Class<U> erasesTo(Class<T> cls) {
+        return (Class<U>) cls;
+    }
 }
 
 
