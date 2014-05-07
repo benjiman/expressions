@@ -6,7 +6,7 @@ import java.util.function.Function;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.toString;
 
-interface Paint extends EqualsHashcode<Paint>, ToString<Paint> {
+interface Paint {
     int red();
     int green();
     int blue();
