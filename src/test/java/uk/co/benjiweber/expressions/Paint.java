@@ -22,5 +22,4 @@ interface Paint {
             public int blue() { return blue; }
         }.using(Paint::red, Paint::green, Paint::blue);
     }
-
 }

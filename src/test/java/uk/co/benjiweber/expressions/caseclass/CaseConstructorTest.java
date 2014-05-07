@@ -50,7 +50,7 @@ public class CaseConstructorTest {
 
     }
 
-    interface Person extends Case<Person>, EqualsHashcode<Person>, ToString<Person> {
+    interface Person extends Case<Person> {
         String firstname();
         String lastname();
 
