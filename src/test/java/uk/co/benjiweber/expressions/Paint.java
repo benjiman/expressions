@@ -23,8 +23,4 @@ interface Paint {
         }.using(Paint::red, Paint::green, Paint::blue);
     }
 
-    default List<Function<Paint,?>> props() {
-        return asList(Paint::red, Paint::green, Paint::blue);
-    }
-
 }
