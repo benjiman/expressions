@@ -3,6 +3,7 @@ package uk.co.benjiweber.expressions.caseclass;
 import org.junit.Test;
 import uk.co.benjiweber.expressions.EqualsHashcode;
 import uk.co.benjiweber.expressions.ToString;
+import uk.co.benjiweber.expressions.Value;
 
 import java.util.List;
 import java.util.function.Function;
@@ -38,15 +39,12 @@ public class DecompositionTest {
         Integer age();
 
         static Person person(String firstname, String lastname, Integer age, Function<Person, ?>... props) {
-            return new Person() {
+            abstract class PersonValue extends Value<Person> implements Person {}
+            return new PersonValue() {
                 public String firstname() { return firstname; }
                 public String lastname() { return lastname; }
                 public Integer age() { return age; }
-                @Override public String toString() { return autoToString(); }
-                @Override public boolean equals(Object o) { return autoEquals(o); }
-                @Override public int hashCode() { return autoHashCode(); }
-                public List<Function<Person, ?>> props() { return asList(props); }
-            };
+            }.using(props);
         }
 
         static Person person(String firstname, String lastname, Integer age) {

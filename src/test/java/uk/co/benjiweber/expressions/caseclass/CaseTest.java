@@ -5,7 +5,7 @@ import uk.co.benjiweber.expressions.caseclass.Case3;
 
 import static org.junit.Assert.assertEquals;
 
-public class CaseTest {
+public class  CaseTest {
 
     @Test
     public void case_example() {
@@ -32,12 +32,8 @@ public class CaseTest {
         float width();
         static Rectangle create(float width, float length) {
             return new Rectangle() {
-                public float length() {
-                    return length;
-                }
-                public float width() {
-                    return width;
-                }
+                public float length() { return length; }
+                public float width() { return width; }
             };
         }
     }

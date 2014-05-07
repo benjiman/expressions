@@ -1,6 +1,5 @@
 package uk.co.benjiweber.expressions;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -16,14 +15,12 @@ interface Paint extends EqualsHashcode<Paint>, ToString<Paint> {
     }
 
     static Paint create(int red, int green, int blue) {
-        return new Paint() {
+        abstract class PaintValue extends Value<Paint> implements Paint {}
+        return new PaintValue() {
             public int red() { return red; }
             public int green() { return green; }
             public int blue() { return blue; }
-            @Override public boolean equals(Object o) { return autoEquals(o); }
-            @Override public int hashCode() { return autoHashCode(); }
-            @Override public String toString() { return autoToString(); }
-        };
+        }.using(Paint::red, Paint::green, Paint::blue);
     }
 
     default List<Function<Paint,?>> props() {

@@ -2,6 +2,7 @@ package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
 import uk.co.benjiweber.expressions.EqualsHashcode;
+import uk.co.benjiweber.expressions.Value;
 import uk.co.benjiweber.expressions.caseclass.Case;
 import uk.co.benjiweber.expressions.caseclass.MatchesAny;
 
@@ -58,9 +59,10 @@ public class CaseParseArgumentsTest {
         return this;
     }
 
-    interface Argument extends Case<Argument>, EqualsHashcode<Argument> {
+    interface Argument extends Case<Argument> {
         String flag();
         String value();
+
         static Argument arg(String flag, MatchesAny value) {
             return arg(flag, null, Argument::flag);
         }
@@ -68,13 +70,11 @@ public class CaseParseArgumentsTest {
             return arg(flag, value, Argument::flag, Argument::value);
         }
         static Argument arg(String flag, String value, Function<Argument,?>... props) {
-            return new Argument() {
+            abstract class ArgValue extends Value<Argument> implements Argument {}
+            return new ArgValue() {
                 public String flag() { return flag; }
                 public String value() { return value; }
-                public List<Function<Argument,?>> props() { return Arrays.asList(props); }
-                @Override public boolean equals(Object o) { return autoEquals(o); }
-                @Override public int hashCode() { return autoHashCode(); }
-            };
+            }.using(props);
         }
     }
 

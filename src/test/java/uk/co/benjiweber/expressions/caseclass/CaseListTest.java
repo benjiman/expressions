@@ -3,6 +3,7 @@ package uk.co.benjiweber.expressions.caseclass;
 import org.junit.Test;
 import uk.co.benjiweber.expressions.EqualsHashcode;
 import uk.co.benjiweber.expressions.ToString;
+import uk.co.benjiweber.expressions.Value;
 import uk.co.benjiweber.expressions.caseclass.Case2;
 
 import java.util.Arrays;
@@ -46,17 +47,15 @@ public class CaseListTest {
 
     interface List<T> extends Case2<Tail<T>,EmptyList<T>> {}
 
-    interface Tail<T> extends List<T>, EqualsHashcode<Tail<T>>, ToString<Tail<T>> {
+    interface Tail<T> extends List<T> {
         T head();
         List<T> tail();
         static <T> List<T> list(T head, List<T> tail) {
-            return new Tail<T>() {
+            abstract class TailValue extends Value<Tail> implements Tail {}
+            return new TailValue() {
                 public T head() { return head;}
                 public List<T> tail() { return tail; }
-                @Override public boolean equals(Object o) { return autoEquals(o); }
-                @Override public int hashCode() { return autoHashCode(); }
-                @Override public String toString() { return autoToString(); }
-            };
+            }.using(Tail::head, Tail::tail);
         }
 
         default java.util.List<Function<Tail<T>, ?>> props() {
