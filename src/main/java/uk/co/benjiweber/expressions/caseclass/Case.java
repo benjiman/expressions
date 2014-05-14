@@ -1,13 +1,17 @@
 package uk.co.benjiweber.expressions.caseclass;
 
+import uk.co.benjiweber.expressions.EqualsHashcode;
+
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-public interface Case<T> {
+public interface Case<T> extends EqualsHashcode<T> {
     default MatchBuilder<T> match() {
         return new MatchBuilder<T>() {
             public <R> MatchBuilderR<T, R> when(T value, Function<T, R> f) {
@@ -17,11 +21,189 @@ public interface Case<T> {
                 Function<T,R> valueExtractor = t -> f.apply(value.prop1((T)Case.this), value.prop2((T)Case.this));
                 return new MatchBuilderR<T, R>(asList(MatchDefinition.create(value.original(), valueExtractor)), Case.this);
             }
+
+            public ZeroMatchConstructorBuilder<T> when(Supplier<T> constructor) {
+                return new ZeroMatchConstructorBuilder<T>() {
+                    public <R> MatchBuilderR<T, R> then(Function<T, R> f) {
+                        T original = constructor.get();
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original, f)), Case.this);
+                    }
+                };
+            }
+
+
+
+            public <A> ZeroMatchConstructorBuilder<T> when(Function<A,T> constructor, A a) {
+                return new ZeroMatchConstructorBuilder<T>() {
+                    public <R> MatchBuilderR<T, R> then(Function<T, R> f) {
+                        T original = constructor.apply(a);
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original, f)), Case.this);
+                    }
+                };
+            }
+
+            public <A> UniMatchConstructorBuilder<T, A> when(Function<A, T> constructor, MatchesAny a) {
+                return new UniMatchConstructorBuilder<T, A>() {
+                    public <R> MatchBuilderR<T, R> then(Function<A, R> f) {
+                        T original = constructor.apply(null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+
+
+
+            public <A,B> ZeroMatchConstructorBuilder<T> when(BiFunction<A,B,T> constructor, A a, B b) {
+                return new ZeroMatchConstructorBuilder<T>() {
+                    public <R> MatchBuilderR<T, R> then(Function<T, R> f) {
+                        T original = constructor.apply(a,b);
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original, f)), Case.this);
+                    }
+                };
+            }
+
+            public <A, B> BiMatchConstructorBuilder<T, A, B> when(BiFunction<A, B, T> constructor, MatchesAny a, MatchesAny b) {
+                return new BiMatchConstructorBuilder<T, A, B>() {
+                    public <R> MatchBuilderR<T, R> then(BiFunction<A, B, R> f) {
+                        T original = constructor.apply(null,null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            public <A, B> UniMatchConstructorBuilder<T, A> when(BiFunction<A, B, T> constructor, MatchesAny a, B b) {
+                return new UniMatchConstructorBuilder<T, A>() {
+                    public <R> MatchBuilderR<T, R> then(Function<A, R> f) {
+                        T original = constructor.apply(null,b);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            public <A, B> UniMatchConstructorBuilder<T, B> when(BiFunction<A, B, T> constructor, A a, MatchesAny b) {
+                return new UniMatchConstructorBuilder<T, B>() {
+                    public <R> MatchBuilderR<T, R> then(Function<B, R> f) {
+                        T original = constructor.apply(a,null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((B)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+
+
+
+            public <A,B,C> ZeroMatchConstructorBuilder<T> when(TriFunction<A,B,C,T> constructor, A a, B b, C c) {
+                return new ZeroMatchConstructorBuilder<T>() {
+                    public <R> MatchBuilderR<T, R> then(Function<T, R> f) {
+                        T original = constructor.apply(a,b,c);
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original, f)), Case.this);
+                    }
+                };
+            }
+
+            public <A, B, C> TriMatchConstructorBuilder<T, A, B, C> when(TriFunction<A, B, C, T> constructor, MatchesAny a, MatchesAny b, MatchesAny c) {
+                return new TriMatchConstructorBuilder<T, A, B, C>() {
+                    public <R> MatchBuilderR<T, R> then(TriFunction<A, B, C, R> f) {
+                        T original = constructor.apply(null,null,null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1), (C)missingProps.get(2));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            public <A, B, C> BiMatchConstructorBuilder<T, A, B> when(TriFunction<A, B, C, T> constructor, MatchesAny a, MatchesAny b, C c) {
+                return new BiMatchConstructorBuilder<T, A, B>() {
+                    public <R> MatchBuilderR<T, R> then(BiFunction<A, B, R> f) {
+                        T original = constructor.apply(null,null,c);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+
+            public <A, B, C> BiMatchConstructorBuilder<T, B, C> when(TriFunction<A, B, C, T> constructor, A a, MatchesAny b, MatchesAny c) {
+                return new BiMatchConstructorBuilder<T, B, C>() {
+                    public <R> MatchBuilderR<T, R> then(BiFunction<B, C, R> f) {
+                        T original = constructor.apply(a,null,null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((B)missingProps.get(0), (C)missingProps.get(1));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            public <A, B, C> BiMatchConstructorBuilder<T, A, C> when(TriFunction<A, B, C, T> constructor, MatchesAny a, B b, MatchesAny c) {
+                return new BiMatchConstructorBuilder<T, A, C>() {
+                    public <R> MatchBuilderR<T, R> then(BiFunction<A, C, R> f) {
+                        T original = constructor.apply(null,b,null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (C)missingProps.get(1));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            @Override
+            public <A, B, C> UniMatchConstructorBuilder<T, A> when(TriFunction<A, B, C, T> constructor, MatchesAny a, B b, C c) {
+                return new UniMatchConstructorBuilder<T, A>() {
+                    public <R> MatchBuilderR<T, R> then(Function<A, R> f) {
+                        T original = constructor.apply(null,b,c);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            @Override
+            public <A, B, C> UniMatchConstructorBuilder<T, B> when(TriFunction<A, B, C, T> constructor, A a, MatchesAny b, C c) {
+                return new UniMatchConstructorBuilder<T, B>() {
+                    public <R> MatchBuilderR<T, R> then(Function<B, R> f) {
+                        T original = constructor.apply(a,null,c);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((B)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+
+            @Override
+            public <A, B, C> UniMatchConstructorBuilder<T, C> when(TriFunction<A, B, C, T> constructor, A a, B b, MatchesAny c) {
+                return new UniMatchConstructorBuilder<T, C>() {
+                    public <R> MatchBuilderR<T, R> then(Function<C, R> f) {
+                        T original = constructor.apply(a,b,null);
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((C)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
             public <R, A, B> MatchBuilderR<T, R> when(OneMissing<T, A> value, Function<A, R> f) {
                 Function<T,R> valueExtractor = t -> f.apply(value.prop1((T) Case.this));
                 return new MatchBuilderR<T, R>(asList(MatchDefinition.create(value.original(), valueExtractor)), Case.this);
             }
         };
+    }
+
+    static <T> List<Object> missingProps(Case<T> value, Case<T> toMatch) {
+        return toMatch.props().stream()
+            .filter(prop -> prop.apply((T)toMatch) == null)
+            .map(prop -> (Object)prop.apply((T)value))
+            .collect(Collectors.toList());
     }
 
     default <A> OneMissing<T,A> missing(Function<T,A> prop1) {
@@ -39,19 +221,78 @@ public interface Case<T> {
         } ;
     }
 
-    interface TwoMissing<T,A,B> {
+    public interface TwoMissing<T,A,B> {
         A prop1(T extractFrom);
         B prop2(T extractFrom);
         T original();
     }
-    interface OneMissing<T,A> {
+    public interface OneMissing<T,A> {
         A prop1(T extractFrom);
         T original();
+    }
+
+    public interface TriFunction<T,U,V,R> {
+        R apply(T t, U u, V v);
     }
 
     public interface MatchBuilder<T> {
         <R> MatchBuilderR<T,R> when(T value, Function<T, R> f);
         <R,A,B> MatchBuilderR<T,R> when(TwoMissing<T,A,B> value, BiFunction<A,B,R> f);
+
+        <A,B,C> BiMatchConstructorBuilder<T,A,B> when(TriFunction<A,B,C,T> constructor, MatchesAny a, MatchesAny b, C c);
+        <A,B,C> BiMatchConstructorBuilder<T,A,C> when(TriFunction<A,B,C,T> constructor, MatchesAny a, B b, MatchesAny c);
+        <A,B,C> BiMatchConstructorBuilder<T,B,C> when(TriFunction<A,B,C,T> constructor, A a, MatchesAny b, MatchesAny c);
+
+        <A,B,C> UniMatchConstructorBuilder<T,A> when(TriFunction<A,B,C,T> constructor, MatchesAny a, B b, C c);
+        <A,B,C> UniMatchConstructorBuilder<T,B> when(TriFunction<A,B,C,T> constructor, A a, MatchesAny b, C c);
+        <A,B,C> UniMatchConstructorBuilder<T,C> when(TriFunction<A,B,C,T> constructor, A a, B b, MatchesAny c);
+
+        <A,B,C> TriMatchConstructorBuilder<T,A,B,C> when(TriFunction<A,B,C,T> constructor, MatchesAny a, MatchesAny b, MatchesAny c);
+        <A,B,C> ZeroMatchConstructorBuilder<T> when(TriFunction<A,B,C,T> constructor, A a, B b, C c);
+
+
+        <A,B> ZeroMatchConstructorBuilder<T> when(BiFunction<A,B,T> constructor, A a, B b);
+        <A,B> BiMatchConstructorBuilder<T,A,B> when(BiFunction<A,B,T> constructor, MatchesAny a, MatchesAny b);
+        <A,B> UniMatchConstructorBuilder<T,A> when(BiFunction<A,B,T> constructor, MatchesAny a, B b);
+        <A,B> UniMatchConstructorBuilder<T,B> when(BiFunction<A,B,T> constructor, A a, MatchesAny b);
+
+        <A> ZeroMatchConstructorBuilder<T> when(Function<A,T> constructor, A a);
+        <A> UniMatchConstructorBuilder<T,A> when(Function<A,T> constructor, MatchesAny a);
+
+        ZeroMatchConstructorBuilder<T> when(Supplier<T> constructor);
+    }
+
+    public interface ZeroMatchConstructorBuilder<T> {
+        <R> MatchBuilderR<T,R> then(Function<T,R> f);
+    }
+
+    public interface ZeroMatchConstructorBuilderR<T,R> {
+        MatchBuilderR<T,R> then(Function<T,R> f);
+    }
+
+
+    public interface TriMatchConstructorBuilder<T,A,B,C> {
+        <R> MatchBuilderR<T,R> then(TriFunction<A,B,C,R> f);
+    }
+
+    public interface TriMatchConstructorBuilderR<T,A,B,C,R> {
+        MatchBuilderR<T,R> then(TriFunction<A,B,C,R> f);
+    }
+
+    public interface BiMatchConstructorBuilder<T,A,B> {
+        <R> MatchBuilderR<T,R> then(BiFunction<A,B,R> f);
+    }
+
+    public interface BiMatchConstructorBuilderR<T,A,B,R> {
+        MatchBuilderR<T,R> then(BiFunction<A,B,R> f);
+    }
+
+    public interface UniMatchConstructorBuilder<T,A> {
+        <R> MatchBuilderR<T,R> then(Function<A,R> f);
+    }
+
+    public interface UniMatchConstructorBuilderR<T,A,R> {
+        MatchBuilderR<T,R> then(Function<A,R> f);
     }
 
     interface MatchDefinition<T,R> {
@@ -65,8 +306,17 @@ public interface Case<T> {
         }
 
         static <T,R> Predicate<MatchDefinition<T,R>> matches(Case<T> value) {
-            return match -> Objects.equals(match.value(), value);
+            return match ->
+                value.props().stream()
+                    .allMatch(
+                            prop -> prop.apply(
+                                    match.value()) == null
+                                    ||
+                                    prop.apply(match.value()).equals(prop.apply((T) value)
+                                    )
+                    );
         }
+
     }
 
     public static class MatchBuilderR<T,R> {
@@ -96,6 +346,192 @@ public interface Case<T> {
             return this;
         }
 
+
+
+        public ZeroMatchConstructorBuilderR<T,R> when(Supplier<T> constructor) {
+            return new ZeroMatchConstructorBuilderR<T,R>() {
+                public MatchBuilderR<T, R> then(Function<T, R> f) {
+                    T original = constructor.get();
+                    cases.add(MatchDefinition.create(original, f));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+
+
+
+
+        public <A> ZeroMatchConstructorBuilderR<T,R> when(Function<A,T> constructor, A a) {
+            return new ZeroMatchConstructorBuilderR<T,R>() {
+                public MatchBuilderR<T, R> then(Function<T, R> f) {
+                    T original = constructor.apply(a);
+                    cases.add(MatchDefinition.create(original, f));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A> UniMatchConstructorBuilderR<T, A, R> when(Function<A, T> constructor, MatchesAny a) {
+            return new UniMatchConstructorBuilderR<T, A, R>() {
+                public MatchBuilderR<T, R> then(Function<A, R> f) {
+                    T original = constructor.apply(null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                    cases.add(MatchDefinition.create(original, valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+
+
+
+
+        public <A,B> ZeroMatchConstructorBuilderR<T,R> when(BiFunction<A,B,T> constructor, A a, B b) {
+            return new ZeroMatchConstructorBuilderR<T,R>() {
+                public MatchBuilderR<T, R> then(Function<T, R> f) {
+                    T original = constructor.apply(a,b);
+                    cases.add(MatchDefinition.create(original, f));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A, B> BiMatchConstructorBuilderR<T, A, B, R> when(BiFunction<A, B, T> constructor, MatchesAny a, MatchesAny b) {
+            return new BiMatchConstructorBuilderR<T, A, B, R>() {
+                public MatchBuilderR<T, R> then(BiFunction<A, B, R> f) {
+                    T original = constructor.apply(null,null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1));
+                    cases.add(MatchDefinition.create(original, valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A, B> UniMatchConstructorBuilderR<T, A, R> when(BiFunction<A, B, T> constructor, MatchesAny a, B b) {
+            return new UniMatchConstructorBuilderR<T, A, R>() {
+                public MatchBuilderR<T, R> then(Function<A, R> f) {
+                    T original = constructor.apply(null,b);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                    cases.add(MatchDefinition.create(original, valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A, B> UniMatchConstructorBuilderR<T, B, R> when(BiFunction<A, B, T> constructor, A a, MatchesAny b) {
+            return new UniMatchConstructorBuilderR<T, B, R>() {
+                public MatchBuilderR<T, R> then(Function<B, R> f) {
+                    T original = constructor.apply(a,null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((B)missingProps.get(0));
+                    cases.add(MatchDefinition.create(original, valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+
+
+
+
+        public <A,B,C> ZeroMatchConstructorBuilderR<T,R> when(TriFunction<A,B,C,T> constructor, A a, B b, C c) {
+            return new ZeroMatchConstructorBuilderR<T,R>() {
+                public MatchBuilderR<T, R> then(Function<T, R> f) {
+                    T original = constructor.apply(a,b,c);
+                    cases.add(MatchDefinition.create(original, f));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> TriMatchConstructorBuilderR<T, A, B, C, R> when(TriFunction<A,B,C,T> constructor, MatchesAny a, MatchesAny b, MatchesAny c) {
+            return new TriMatchConstructorBuilderR<T, A, B, C, R>() {
+                public MatchBuilderR<T, R> then(TriFunction<A, B, C, R> f) {
+                    T original = constructor.apply(null,null,null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1), (C)missingProps.get(2));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> BiMatchConstructorBuilderR<T, A, B, R> when(TriFunction<A,B,C,T> constructor, MatchesAny a, MatchesAny b, C c) {
+            return new BiMatchConstructorBuilderR<T, A, B, R>() {
+                public MatchBuilderR<T, R> then(BiFunction<A, B, R> f) {
+                    T original = constructor.apply(null,null,c);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> BiMatchConstructorBuilderR<T, A, C, R> when(TriFunction<A,B,C,T> constructor, MatchesAny a, B b, MatchesAny c) {
+            return new BiMatchConstructorBuilderR<T, A, C, R>() {
+                public MatchBuilderR<T, R> then(BiFunction<A, C, R> f) {
+                    T original = constructor.apply(null,b,null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (C)missingProps.get(1));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> BiMatchConstructorBuilderR<T, B, C, R> when(TriFunction<A,B,C,T> constructor, A a, MatchesAny b, MatchesAny c) {
+            return new BiMatchConstructorBuilderR<T, B, C, R>() {
+                public MatchBuilderR<T, R> then(BiFunction<B, C, R> f) {
+                    T original = constructor.apply(a,null,null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((B)missingProps.get(0), (C)missingProps.get(1));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> UniMatchConstructorBuilderR<T, A, R> when(TriFunction<A,B,C,T> constructor, MatchesAny a, B b, C c) {
+            return new UniMatchConstructorBuilderR<T, A, R>() {
+                public MatchBuilderR<T, R> then(Function<A, R> f) {
+                    T original = constructor.apply(null,b,c);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> UniMatchConstructorBuilderR<T, B, R> when(TriFunction<A,B,C,T> constructor, A a, MatchesAny b, C c) {
+            return new UniMatchConstructorBuilderR<T, B, R>() {
+                public MatchBuilderR<T, R> then(Function<B, R> f) {
+                    T original = constructor.apply(a,null,c);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((B)missingProps.get(0));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
+        public <A,B,C> UniMatchConstructorBuilderR<T, C, R> when(TriFunction<A,B,C,T> constructor, A a, B b, MatchesAny c) {
+            return new UniMatchConstructorBuilderR<T, C, R>() {
+                public MatchBuilderR<T, R> then(Function<C, R> f) {
+                    T original = constructor.apply(a,b,null);
+                    List<Object> missingProps = missingProps(MatchBuilderR.this.value, (Case<T>)original);
+                    Function<T,R> valueExtractor = t -> f.apply((C)missingProps.get(0));
+                    cases.add(MatchDefinition.create(original,valueExtractor));
+                    return MatchBuilderR.this;
+                }
+            };
+        }
+
         public R _(R defaultValue) {
             return _(t -> defaultValue);
         }
@@ -111,5 +547,6 @@ public interface Case<T> {
     }
 
 }
+
 
 

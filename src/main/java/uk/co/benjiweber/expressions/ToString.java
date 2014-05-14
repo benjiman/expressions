@@ -9,6 +9,7 @@ public interface ToString<T> {
         return "{" +
         props().stream()
             .map(prop -> (Object)prop.apply((T)this))
+            .filter(prop -> prop != null)
             .map(Object::toString)
             .collect(Collectors.joining(", ")) +
         "}";
