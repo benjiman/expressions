@@ -21,8 +21,6 @@ public class TimesTest {
 
     @Test
     public void times_literal() {
-        List<String> aCollection = asList("one", "two", "three");
-
         times(6).invoke(this::bar);
 
         assertEquals(6, numberOfTimesBarWasInvoked);
