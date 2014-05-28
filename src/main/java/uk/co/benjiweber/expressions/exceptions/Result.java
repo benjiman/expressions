@@ -2,7 +2,9 @@ package uk.co.benjiweber.expressions.exceptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Result<T> {
     T unwrap();
@@ -79,6 +81,17 @@ public interface Result<T> {
         }
     }
 
+    public static <R, E extends Exception> Supplier<Result<R>> wrapReturn(ExceptionalSupplier<R,E> f) {
+        return () -> {
+            try {
+                return new Success<R>(f.apply());
+            } catch (Exception e) {
+                return new Failure<R>(e);
+            }
+        };
+    }
+
+
     public static <T, R, E extends Exception> Function<T,Result<R>> wrapReturn(ExceptionalFunction<T,R,E> f) {
         return t -> {
             try {
@@ -95,6 +108,20 @@ public interface Result<T> {
                 return t.map(f);
             } catch (Exception e) {
                 return new Failure<R>(e);
+            }
+        };
+    }
+
+    public static <T> Consumer<Result<T>> wrapConsumer(Consumer<T> f) {
+        Function<T,T> f2 = t -> {
+            f.accept(t);
+            return t;
+        };
+        return t -> {
+            try {
+                t.map(f2);
+            } catch (Exception e) {
+
             }
         };
     }
