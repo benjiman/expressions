@@ -1,11 +1,12 @@
 package uk.co.benjiweber.expressions.exceptions;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Exceptions {
-    public static <T> T unchecked(ExceptionalSupplier<T> supplier) {
+    public static <T, E extends Exception> T unchecked(ExceptionalSupplier<T,E> supplier) {
         try {
             return supplier.supply();
         } catch (Error | RuntimeException rex) {
@@ -31,7 +32,7 @@ public class Exceptions {
         <U extends Exception> T in(Class<U> exceptionClass) throws U;
     }
 
-    public static <T> Wrapper<T> wrappingChecked(ExceptionalSupplier<T> supplier) {
+    public static <T, E extends Exception> Wrapper<T> wrappingChecked(ExceptionalSupplier<T, E> supplier) {
         return new Wrapper<T>() {
             public <U extends Exception> T in(Function<Exception, U> exceptionMapper) throws U {
                 try {
@@ -66,7 +67,7 @@ public class Exceptions {
         };
     }
 
-    public static <T> Wrapper<T> wrappingAll(ExceptionalSupplier<T> supplier) {
+    public static <T, E extends Exception> Wrapper<T> wrappingAll(ExceptionalSupplier<T,E> supplier) {
         return new Wrapper<T>() {
             public <U extends Exception> T in(Function<Exception, U> exceptionMapper) throws U {
                 try {
@@ -95,8 +96,8 @@ public class Exceptions {
         };
     }
 
-    public interface ExceptionalSupplier<T> {
-        T supply() throws Exception;
+    public interface ExceptionalSupplier<T, E extends Exception> {
+        T supply() throws E;
     }
 
     public interface ExceptionalVoid {
@@ -121,5 +122,23 @@ public class Exceptions {
         }
     }
 
+    public static <T,R,E extends Exception> Function<T,Optional<R>> toOptional(ExceptionalFunction<T,R,E> f) {
+        return t -> {
+            try {
+                return Optional.ofNullable(f.apply(t));
+            } catch (Exception e) {
+                return Optional.empty();
+            }
+        };
+    }
 
+    public static <R,E extends Exception> Supplier<Optional<R>> toOptional(ExceptionalSupplier<R,E> f) {
+        return () -> {
+            try {
+                return Optional.ofNullable(f.supply());
+            } catch (Exception e) {
+                return Optional.empty();
+            }
+        };
+    }
 }
