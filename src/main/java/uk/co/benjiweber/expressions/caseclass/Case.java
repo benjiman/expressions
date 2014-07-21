@@ -1,6 +1,7 @@
 package uk.co.benjiweber.expressions.caseclass;
 
 import uk.co.benjiweber.expressions.EqualsHashcode;
+import uk.co.benjiweber.expressions.functions.TriFunction;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -229,10 +230,6 @@ public interface Case<T> extends EqualsHashcode<T> {
     public interface OneMissing<T,A> {
         A prop1(T extractFrom);
         T original();
-    }
-
-    public interface TriFunction<T,U,V,R> {
-        R apply(T t, U u, V v);
     }
 
     public interface MatchBuilder<T> {

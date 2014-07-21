@@ -6,7 +6,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Exceptions {
-    public static <T, E extends Exception> T unchecked(ExceptionalSupplier<T,E> supplier) {
+    public static <T,E extends Exception> T unchecked(ExceptionalSupplier<T,E> supplier) {
         try {
             return supplier.supply();
         } catch (Error | RuntimeException rex) {
@@ -67,7 +67,7 @@ public class Exceptions {
         };
     }
 
-    public static <T, E extends Exception> Wrapper<T> wrappingAll(ExceptionalSupplier<T,E> supplier) {
+    public static <T,E extends Exception> Wrapper<T> wrappingAll(ExceptionalSupplier<T,E> supplier) {
         return new Wrapper<T>() {
             public <U extends Exception> T in(Function<Exception, U> exceptionMapper) throws U {
                 try {
@@ -96,7 +96,7 @@ public class Exceptions {
         };
     }
 
-    public interface ExceptionalSupplier<T, E extends Exception> {
+    public interface ExceptionalSupplier<T,E extends Exception> {
         T supply() throws E;
     }
 
