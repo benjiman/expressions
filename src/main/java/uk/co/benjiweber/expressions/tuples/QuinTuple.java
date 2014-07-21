@@ -2,6 +2,7 @@ package uk.co.benjiweber.expressions.tuples;
 
 import uk.co.benjiweber.expressions.Value;
 import uk.co.benjiweber.expressions.functions.ExceptionalQuinConsumer;
+import uk.co.benjiweber.expressions.functions.ExceptionalQuinFunction;
 
 public interface QuinTuple<A,B,C,D,E> {
     A one();

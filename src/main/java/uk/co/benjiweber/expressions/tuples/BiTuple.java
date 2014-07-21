@@ -22,5 +22,4 @@ public interface BiTuple<A,B> {
     default <E extends Exception> void consume(ExceptionalBiConsumer<A,B,E> consumer) throws E {
         consumer.accept(one(), two());
     }
-
 }

@@ -9,14 +9,14 @@ import static uk.co.benjiweber.expressions.tuples.Tuple.tuple;
 public class TupleTest {
 
     @Test public void return_and_expand_tuples() {
-        String name = foo()
+        String name = me()
             .map((firstname, favouriteNo, surname) -> tuple(firstname, surname))
             .map((firstname, surname) -> firstname + " " + surname);
 
         assertEquals("benji weber", name);
     }
 
-    static TriTuple<String, Integer, String> foo() {
+    static TriTuple<String, Integer, String> me() {
         return tuple("benji",9001,"weber");
     }
 
@@ -39,7 +39,7 @@ public class TupleTest {
 
     @Test(expected = NumberTooBigException.class)
     public void return_and_throw_checked_exception() throws NumberTooBigException {
-        String name = foo()
+        String name = me()
             .map((firstname, favouriteNo, surname) -> {
                 if (favouriteNo > 9000) throw new NumberTooBigException();
                 return firstname;
