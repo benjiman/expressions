@@ -5,6 +5,7 @@ import uk.co.benjiweber.expressions.exceptions.Result;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -157,6 +158,20 @@ public class ExceptionsTest {
         }
     }
 
+    @Test
+    public void completable_future_supplyaync_exceptional() {
+        CompletableFuture
+                .supplyAsync(Result.wrapReturn(Example::throwingSupplier))
+                .thenApply(Result.wrap(String::toUpperCase))
+                .thenAccept(Result.wrapConsumer(System.out::println));
+
+
+        CompletableFuture
+                .supplyAsync(Result.wrapReturn(Example::notThrowingSupplier))
+                .thenApply(Result.wrap(String::toUpperCase))
+                .thenAccept(Result.wrapConsumer(System.out::println));
+    }
+
 
     static class ACheckedExceptionIDontHaveAGoodWayToDealWith extends Exception {
 
@@ -197,6 +212,14 @@ public class ExceptionsTest {
         public static String methodThatThrowsNPE(boolean throwPlease) {
             if(throwPlease) throw new NullPointerException();
             return "not_an_npe";
+        }
+
+        public static String throwingSupplier() throws InputTooLongException {
+            throw new InputTooLongException();
+        }
+
+        public static String notThrowingSupplier() throws InputTooLongException {
+            return "hello";
         }
 
         public static String methodThatThrowsRuntimeException(boolean throwPlease) {
