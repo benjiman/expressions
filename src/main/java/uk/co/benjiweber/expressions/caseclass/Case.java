@@ -3,12 +3,14 @@ package uk.co.benjiweber.expressions.caseclass;
 import uk.co.benjiweber.expressions.EqualsHashcode;
 import uk.co.benjiweber.expressions.functions.TriFunction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
@@ -32,8 +34,6 @@ public interface Case<T> extends EqualsHashcode<T> {
                 };
             }
 
-
-
             public <A> ZeroMatchConstructorBuilder<T> when(Function<A,T> constructor, A a) {
                 return new ZeroMatchConstructorBuilder<T>() {
                     public <R> MatchBuilderR<T, R> then(Function<T, R> f) {
@@ -55,6 +55,29 @@ public interface Case<T> extends EqualsHashcode<T> {
             }
 
 
+            @Override
+            public <A> UniMatchConstructorBuilder<T, A> when(TriConstructorMatchReference.UniMatchTriConstructorMatchReference<T, A> ref) {
+                return new UniMatchConstructorBuilder<T, A>() {
+                    public <R> MatchBuilderR<T, R> then(Function<A, R> f) {
+                        T original = ref.comparee();
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
+
+            @Override
+            public <A,B> BiMatchConstructorBuilder<T, A, B> when(TriConstructorMatchReference.BiMatchTriConstructorMatchReference<T, A, B> ref) {
+                return new BiMatchConstructorBuilder<T, A, B>() {
+                    public <R> MatchBuilderR<T, R> then(BiFunction<A, B, R> f) {
+                        T original = ref.comparee();
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+            }
 
 
             public <A,B> ZeroMatchConstructorBuilder<T> when(BiFunction<A,B,T> constructor, A a, B b) {
@@ -201,10 +224,17 @@ public interface Case<T> extends EqualsHashcode<T> {
     }
 
     static <T> List<Object> missingProps(Case<T> value, Case<T> toMatch) {
-        return toMatch.props().stream()
-            .filter(prop -> prop.apply((T)toMatch) == null)
-            .map(prop -> (Object)prop.apply((T)value))
-            .collect(Collectors.toList());
+        Stream<Object> missingPropertiesFromNestedCaseProperties =
+            toMatch.props().stream()
+                .filter(prop -> prop.apply((T) toMatch) instanceof Case)
+                .flatMap(prop -> missingProps((Case<Object>) prop.apply((T) value), (Case<Object>) prop.apply((T) toMatch)).stream());
+
+        Stream<Object> missingDirectProperties = toMatch.props().stream()
+                .filter(prop -> prop.apply((T) toMatch) == null)
+                .map(prop -> prop.apply((T) value));
+
+        return Stream.concat(missingPropertiesFromNestedCaseProperties,missingDirectProperties)
+                .collect(Collectors.toList());
     }
 
     default <A> OneMissing<T,A> missing(Function<T,A> prop1) {
@@ -257,6 +287,11 @@ public interface Case<T> extends EqualsHashcode<T> {
         <A> UniMatchConstructorBuilder<T,A> when(Function<A,T> constructor, MatchesAny a);
 
         ZeroMatchConstructorBuilder<T> when(Supplier<T> constructor);
+
+
+
+        <M0> UniMatchConstructorBuilder<T,M0> when(TriConstructorMatchReference.UniMatchTriConstructorMatchReference<T,M0> ref);
+        <M0,M1> BiMatchConstructorBuilder<T,M0,M1> when(TriConstructorMatchReference.BiMatchTriConstructorMatchReference<T,M0,M1> ref);
     }
 
     public interface ZeroMatchConstructorBuilder<T> {
@@ -303,15 +338,19 @@ public interface Case<T> extends EqualsHashcode<T> {
         }
 
         static <T,R> Predicate<MatchDefinition<T,R>> matches(Case<T> value) {
-            return match ->
-                value.props().stream()
-                    .allMatch(
-                            prop -> prop.apply(
-                                    match.value()) == null
-                                    ||
-                                    prop.apply(match.value()).equals(prop.apply((T) value)
-                                    )
-                    );
+            return match -> recursiveCompareIgnoringUnknownProperties(value, match.value());
+        }
+
+        static <T> boolean recursiveCompareIgnoringUnknownProperties(Case<T> value, T comparisonValue) {
+            return value.props().stream()
+                .allMatch(
+                    prop -> {
+                        Object lhs = prop.apply(comparisonValue);
+                        if (lhs == null) return true;
+                        if (lhs instanceof Case) return recursiveCompareIgnoringUnknownProperties((Case<Object>) prop.apply((T) value), lhs);
+                        return (lhs.equals(prop.apply((T) value)));
+                    }
+                );
         }
 
     }
