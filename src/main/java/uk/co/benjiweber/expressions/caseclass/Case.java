@@ -8,6 +8,7 @@ import uk.co.benjiweber.expressions.functions.TriFunction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -587,6 +588,10 @@ public interface Case<T> extends EqualsHashcode<T> {
 
         public R _(R defaultValue) {
             return _(t -> defaultValue);
+        }
+
+        public Optional<R> toOptional() {
+            return Optional.ofNullable(_(t -> null));
         }
 
         public R _(Function<T,R> f) {

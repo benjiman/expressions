@@ -5,7 +5,10 @@ import uk.co.benjiweber.expressions.Value;
 import uk.co.benjiweber.expressions.caseclass.constructor.references.BiMatch;
 import uk.co.benjiweber.expressions.caseclass.constructor.references.TriMatch;
 
+import java.util.Optional;
+
 import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static uk.co.benjiweber.expressions.caseclass.MatchesAny._;
 import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.Address.address;
 import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.Customer.customer;
@@ -41,11 +44,33 @@ public class NestedDecompositionTest {
     public void nested_decomposition_using_constructor_references_deeper() {
         Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
-                $(Customer::customer, "Benji", "Weber", $(Address::address, $(FirstLine::firstLine,_,_), _))
+                $(Customer::customer, "Benji", "Weber", $(Address::address, $(FirstLine::firstLine, _, _), _))
         ).then((houseNo, road, postCode) -> houseNo + " " + road)
         ._("unknown");
 
         assertEquals("123 Some Road", result);
+    }
+
+    @Test
+    public void nested_decomposition_using_constructor_references_optional() {
+        Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
+        Optional<String> result = a.match().when(
+                $(Customer::customer, "Benji", "Weber", $(Address::address, $(FirstLine::firstLine,_,_), _))
+        ).then((houseNo, road, postCode) -> houseNo + " " + road)
+        .toOptional();
+
+        assertEquals("123 Some Road", result.get());
+    }
+
+    @Test
+    public void nested_decomposition_using_constructor_references_optional_unknown() {
+        Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
+        Optional<String> result = a.match().when(
+                $(Customer::customer, "Someone", "Weber", $(Address::address, $(FirstLine::firstLine,_,_), _))
+        ).then((houseNo, road, postCode) -> houseNo + " " + road)
+                .toOptional();
+
+        assertFalse(result.isPresent());
     }
 
     interface Customer extends Case<Customer> {
