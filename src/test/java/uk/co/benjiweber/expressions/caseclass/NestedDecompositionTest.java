@@ -2,8 +2,6 @@ package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
 import uk.co.benjiweber.expressions.Value;
-import uk.co.benjiweber.expressions.caseclass.constructor.references.BiMatch;
-import uk.co.benjiweber.expressions.caseclass.constructor.references.TriMatch;
 
 import java.util.Optional;
 
@@ -15,14 +13,18 @@ import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.Cus
 import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.FirstLine.firstLine;
 import static uk.co.benjiweber.expressions.caseclass.constructor.TriConstructor.*;
 import static uk.co.benjiweber.expressions.caseclass.constructor.BiConstructor.*;
-import static uk.co.benjiweber.expressions.caseclass.constructor.UniConstructor.*;
+
 public class NestedDecompositionTest {
 
     @Test
     public void nested_decomposition_using_constructor_references() {
         Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
-            $(Customer::customer, "Benji", "Weber", $(Address::address, _, "AB123CD"))
+            a(Customer::customer).matching(
+                "Benji",
+                "Weber",
+                an(Address::address).matching(_, "AB123CD")
+            )
         ).then(firstLine -> firstLine.roadName())
         ._("unknown");
 
@@ -33,7 +35,11 @@ public class NestedDecompositionTest {
     public void nested_decomposition_using_constructor_references_no_match() {
         Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
-                $(Customer::customer, "Someone", "Else", $(Address::address, _, "AB123CD"))
+            a(Customer::customer).matching(
+                "Someone",
+                "Else",
+                an(Address::address).matching(_, "AB123CD")
+            )
         ).then(firstLine -> firstLine.roadName())
         ._("unknown");
 
@@ -44,7 +50,14 @@ public class NestedDecompositionTest {
     public void nested_decomposition_using_constructor_references_deeper() {
         Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
-                $(Customer::customer, "Benji", "Weber", $(Address::address, $(FirstLine::firstLine, _, _), _))
+            a(Customer::customer).matching(
+                "Benji",
+                "Weber",
+                an(Address::address).matching(
+                    a(FirstLine::firstLine).matching(_, _),
+                    _
+                )
+            )
         ).then((houseNo, road, postCode) -> houseNo + " " + road)
         ._("unknown");
 
@@ -55,7 +68,14 @@ public class NestedDecompositionTest {
     public void nested_decomposition_using_constructor_references_optional() {
         Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         Optional<String> result = a.match().when(
-                $(Customer::customer, "Benji", "Weber", $(Address::address, $(FirstLine::firstLine,_,_), _))
+            a(Customer::customer).matching(
+                    "Benji",
+                    "Weber",
+                    an(Address::address).matching(
+                            a(FirstLine::firstLine).matching(_, _),
+                            _
+                    )
+            )
         ).then((houseNo, road, postCode) -> houseNo + " " + road)
         .toOptional();
 
@@ -66,7 +86,14 @@ public class NestedDecompositionTest {
     public void nested_decomposition_using_constructor_references_optional_unknown() {
         Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         Optional<String> result = a.match().when(
-                $(Customer::customer, "Someone", "Weber", $(Address::address, $(FirstLine::firstLine,_,_), _))
+            a(Customer::customer).matching(
+                "Someone",
+                "Weber",
+                an(Address::address).matching(
+                    a(FirstLine::firstLine).matching(_,_),
+                    _
+                )
+            )
         ).then((houseNo, road, postCode) -> houseNo + " " + road)
                 .toOptional();
 
