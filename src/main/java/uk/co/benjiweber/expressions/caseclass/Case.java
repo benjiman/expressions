@@ -1,6 +1,9 @@
 package uk.co.benjiweber.expressions.caseclass;
 
 import uk.co.benjiweber.expressions.EqualsHashcode;
+import uk.co.benjiweber.expressions.caseclass.constructor.references.BiMatch;
+import uk.co.benjiweber.expressions.caseclass.constructor.references.TriMatch;
+import uk.co.benjiweber.expressions.caseclass.constructor.references.UniMatch;
 import uk.co.benjiweber.expressions.functions.TriFunction;
 
 import java.util.ArrayList;
@@ -56,7 +59,7 @@ public interface Case<T> extends EqualsHashcode<T> {
 
 
             @Override
-            public <A> UniMatchConstructorBuilder<T, A> when(TriConstructorMatchReference.UniMatchTriConstructorMatchReference<T, A> ref) {
+            public <A> UniMatchConstructorBuilder<T, A> when(UniMatch<T, A> ref) {
                 return new UniMatchConstructorBuilder<T, A>() {
                     public <R> MatchBuilderR<T, R> then(Function<A, R> f) {
                         T original = ref.comparee();
@@ -68,7 +71,7 @@ public interface Case<T> extends EqualsHashcode<T> {
             }
 
             @Override
-            public <A,B> BiMatchConstructorBuilder<T, A, B> when(TriConstructorMatchReference.BiMatchTriConstructorMatchReference<T, A, B> ref) {
+            public <A,B> BiMatchConstructorBuilder<T, A, B> when(BiMatch<T, A, B> ref) {
                 return new BiMatchConstructorBuilder<T, A, B>() {
                     public <R> MatchBuilderR<T, R> then(BiFunction<A, B, R> f) {
                         T original = ref.comparee();
@@ -77,6 +80,19 @@ public interface Case<T> extends EqualsHashcode<T> {
                         return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
                     }
                 };
+            }
+
+            @Override
+            public <A, B, C> TriMatchConstructorBuilder<T, A, B, C> when(TriMatch<T, A, B, C> ref) {
+                return new TriMatchConstructorBuilder<T, A, B, C>() {
+                    public <R> MatchBuilderR<T, R> then(TriFunction<A, B, C, R> f) {
+                        T original = ref.comparee();
+                        List<Object> missingProps = missingProps((Case<T>)Case.this, (Case<T>)original);
+                        Function<T,R> valueExtractor = t -> f.apply((A)missingProps.get(0), (B)missingProps.get(1), (C)missingProps.get(2));
+                        return new MatchBuilderR<T, R>(asList(MatchDefinition.create(original,valueExtractor)),Case.this);
+                    }
+                };
+
             }
 
 
@@ -290,8 +306,9 @@ public interface Case<T> extends EqualsHashcode<T> {
 
 
 
-        <M0> UniMatchConstructorBuilder<T,M0> when(TriConstructorMatchReference.UniMatchTriConstructorMatchReference<T,M0> ref);
-        <M0,M1> BiMatchConstructorBuilder<T,M0,M1> when(TriConstructorMatchReference.BiMatchTriConstructorMatchReference<T,M0,M1> ref);
+        <M0> UniMatchConstructorBuilder<T,M0> when(UniMatch<T,M0> ref);
+        <M0,M1> BiMatchConstructorBuilder<T,M0,M1> when(BiMatch<T,M0,M1> ref);
+        <M0,M1,M2> TriMatchConstructorBuilder<T,M0,M1,M2> when(TriMatch<T,M0,M1,M2> ref);
     }
 
     public interface ZeroMatchConstructorBuilder<T> {

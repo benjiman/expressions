@@ -1,45 +1,48 @@
 package uk.co.benjiweber.expressions.caseclass;
 
 import org.junit.Test;
-import uk.co.benjiweber.expressions.Curry;
 import uk.co.benjiweber.expressions.Value;
+import uk.co.benjiweber.expressions.caseclass.constructor.references.BiMatch;
+import uk.co.benjiweber.expressions.caseclass.constructor.references.TriMatch;
 
 import static junit.framework.TestCase.assertEquals;
 import static uk.co.benjiweber.expressions.caseclass.MatchesAny._;
 import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.Address.address;
 import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.Customer.customer;
-import static uk.co.benjiweber.expressions.caseclass.TriConstructorMatchReference.*;
-import static uk.co.benjiweber.expressions.caseclass.BiConstructorMatchReference.*;
+import static uk.co.benjiweber.expressions.caseclass.NestedDecompositionTest.FirstLine.firstLine;
+import static uk.co.benjiweber.expressions.caseclass.constructor.TriConstructor.*;
+import static uk.co.benjiweber.expressions.caseclass.constructor.BiConstructor.*;
+import static uk.co.benjiweber.expressions.caseclass.constructor.UniConstructor.*;
 public class NestedDecompositionTest {
 
     @Test
     public void nested_decomposition_using_constructor_references() {
-        Customer a = customer("Benji", "Weber", address("123 Some Road", "AB123CD"));
+        Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
             $(Customer::customer, "Benji", "Weber", $(Address::address, _, "AB123CD"))
-        ).then(firstLine -> firstLine)
+        ).then(firstLine -> firstLine.roadName())
         ._("unknown");
 
-        assertEquals("123 Some Road", result);
+        assertEquals("Some Road", result);
     }
 
     @Test
     public void nested_decomposition_using_constructor_references_no_match() {
-        Customer a = customer("Benji", "Weber", address("123 Some Road", "AB123CD"));
+        Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
                 $(Customer::customer, "Someone", "Else", $(Address::address, _, "AB123CD"))
-        ).then(firstLine -> firstLine)
+        ).then(firstLine -> firstLine.roadName())
         ._("unknown");
 
         assertEquals("unknown", result);
     }
 
     @Test
-    public void nested_decomposition_using_constructor_references_bi_match() {
-        Customer a = customer("Benji", "Weber", address("123 Some Road", "AB123CD"));
+    public void nested_decomposition_using_constructor_references_deeper() {
+        Customer a = customer("Benji", "Weber", address(firstLine(123, "Some Road"), "AB123CD"));
         String result = a.match().when(
-                $(Customer::customer, "Benji", "Weber", $(Address::address, _, _))
-        ).then((firstLine, postCode) -> firstLine)
+                $(Customer::customer, "Benji", "Weber", $(Address::address, $(FirstLine::firstLine,_,_), _))
+        ).then((houseNo, road, postCode) -> houseNo + " " + road)
         ._("unknown");
 
         assertEquals("123 Some Road", result);
@@ -60,14 +63,26 @@ public class NestedDecompositionTest {
     }
 
     interface Address extends Case<Address> {
-        String firstLine();
+        FirstLine firstLine();
         String postCode();
-        public static Address address(String firstLine, String postCode) {
+        public static Address address(FirstLine firstLine, String postCode) {
             abstract class AddressValue extends Value<Address> implements Address {}
             return new AddressValue() {
-                public String firstLine() { return firstLine; }
+                public FirstLine firstLine() { return firstLine; }
                 public String postCode() { return postCode; }
             }.using(Address::firstLine, Address::postCode);
+        }
+    }
+
+    interface FirstLine extends Case<FirstLine> {
+        Integer houseNumber();
+        String roadName();
+        public static FirstLine firstLine(Integer houseNumber, String roadName) {
+            abstract class FirstLineValue extends Value<FirstLine> implements FirstLine{}
+            return new FirstLineValue() {
+                public Integer houseNumber() { return houseNumber; }
+                public String roadName() { return roadName; }
+            }.using(FirstLine::houseNumber, FirstLine::roadName);
         }
     }
 }
