@@ -26,7 +26,7 @@ public class NestedDecompositionTest {
                 an(Address::address).matching(_, "AB123CD")
             )
         ).then(firstLine -> firstLine.roadName())
-        ._("unknown");
+        .otherwise("unknown");
 
         assertEquals("Some Road", result);
     }
@@ -41,7 +41,7 @@ public class NestedDecompositionTest {
                 an(Address::address).matching(_, "AB123CD")
             )
         ).then(firstLine -> firstLine.roadName())
-        ._("unknown");
+        .otherwise("unknown");
 
         assertEquals("unknown", result);
     }
@@ -59,7 +59,7 @@ public class NestedDecompositionTest {
                 )
             )
         ).then((houseNo, road, postCode) -> houseNo + " " + road)
-        ._("unknown");
+        .otherwise("unknown");
 
         assertEquals("123 Some Road", result);
     }

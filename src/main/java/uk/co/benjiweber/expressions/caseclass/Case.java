@@ -586,6 +586,10 @@ public interface Case<T> extends EqualsHashcode<T> {
             };
         }
 
+        public R otherwise(R defaultValue) {
+            return _(t -> defaultValue);
+        }
+
         public R _(R defaultValue) {
             return _(t -> defaultValue);
         }
