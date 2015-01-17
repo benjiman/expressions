@@ -1,11 +1,21 @@
 package uk.co.benjiweber.expressions.exceptions;
 
+import uk.co.benjiweber.expressions.functions.ExceptionalFunction;
+import uk.co.benjiweber.expressions.functions.ExceptionalSupplier;
+import uk.co.benjiweber.expressions.functions.ExceptionalVoid;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class Exceptions {
+
+    public static <T,R,E extends Exception> Function<T,R> unchecked(ExceptionalFunction<T,R,E> f) {
+        return to(f, t->t ,e -> { throw new RuntimeException(e); });
+    }
+
     public static <T,E extends Exception> T unchecked(ExceptionalSupplier<T,E> supplier) {
         try {
             return supplier.supply();
@@ -18,13 +28,14 @@ public class Exceptions {
 
     public static void unchecked(ExceptionalVoid method) {
         try {
-            method.invoke();
+            method.apply();
         } catch (Error | RuntimeException rex) {
             throw rex;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
+
 
     public interface Wrapper<T> {
         <U extends Exception> T in(Function<Exception, U> exceptionMapper) throws U;
@@ -96,14 +107,6 @@ public class Exceptions {
         };
     }
 
-    public interface ExceptionalSupplier<T,E extends Exception> {
-        T supply() throws E;
-    }
-
-    public interface ExceptionalVoid {
-        void invoke() throws Exception;
-    }
-
     static class UnableToInstantiateSuppliedException extends RuntimeException {
         public UnableToInstantiateSuppliedException(Exception e) {
             super(e);
@@ -140,5 +143,21 @@ public class Exceptions {
                 return Optional.empty();
             }
         };
+    }
+
+    public static <T,R,R2, E extends Exception> Function<T,R2> to(ExceptionalFunction<T,R,E> f, Function<R,R2> successHandler, Function<E,R2> exceptionHandler) {
+        return t -> {
+            try {
+                return successHandler.apply(f.apply(t));
+            } catch (Error e) {
+                throw e;
+            } catch (Exception e) {
+                return exceptionHandler.apply((E) e);
+            }
+        };
+    }
+
+    public static <T,R,E extends Exception> Function<T,Stream<R>> stream(ExceptionalFunction<T,R,E> f) {
+        return to(f,Stream::of, e -> Stream.empty());
     }
 }

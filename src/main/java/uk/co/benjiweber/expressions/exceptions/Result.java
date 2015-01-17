@@ -1,5 +1,8 @@
 package uk.co.benjiweber.expressions.exceptions;
 
+import uk.co.benjiweber.expressions.functions.ExceptionalFunction;
+import uk.co.benjiweber.expressions.functions.ExceptionalSupplier;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -84,7 +87,7 @@ public interface Result<T> {
     public static <R, E extends Exception> Supplier<Result<R>> wrapReturn(ExceptionalSupplier<R,E> f) {
         return () -> {
             try {
-                return new Success<R>(f.apply());
+                return new Success<R>(f.supply());
             } catch (Exception e) {
                 return new Failure<R>(e);
             }
