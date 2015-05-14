@@ -1,7 +1,5 @@
 package uk.co.benjiweber.expressions;
 
-import java.util.Arrays;
-
 public class InstanceOfMethodReference {
 
     public static void main(String... args) throws Exception {

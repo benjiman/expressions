@@ -36,15 +36,15 @@ public class InstanceOf {
         };
     }
 
-    interface InstanceOfBuilder {
+    public interface InstanceOfBuilder {
         <T> ThenBuilder<T> instanceOf(Class<T> cls);
     }
 
-    interface ThenBuilder<T> {
+    public interface ThenBuilder<T> {
         <U> ElseBuilder<U> then(ActionWithOneParam<U, T> action);
     }
 
-    interface ElseBuilder<U> {
+    public interface ElseBuilder<U> {
         U otherwise(U value);
         Optional<U> optional();
     }

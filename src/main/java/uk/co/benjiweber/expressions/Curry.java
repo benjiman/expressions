@@ -9,7 +9,7 @@ public class Curry {
         return t -> u -> fun.apply(t,u);
     }
 
-    interface TriFunction<T,U,V,R> {
+    public interface TriFunction<T,U,V,R> {
         R apply(T t, U u, V v);
     }
 
@@ -17,7 +17,7 @@ public class Curry {
         return t -> u -> v -> fun.apply(t,u,v);
     }
 
-    interface QuadFunction<T,U,V,W,R> {
+    public interface QuadFunction<T,U,V,W,R> {
         R apply(T t, U u, V v, W w);
     }
 

@@ -1,6 +1,5 @@
 package uk.co.benjiweber.expressions;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -17,7 +16,7 @@ public class Coalesce {
             .orElse(null);
     }
 
-    interface AnotherSupplier<T> extends Supplier<T> {}
+    public interface AnotherSupplier<T> extends Supplier<T> {}
 
     public static <T> Optional<T> coalesce(AnotherSupplier<Optional<T>>... ts) {
         return asList(ts)
