@@ -15,7 +15,7 @@ public class Try {
     static interface Finally<T> {
         TryBuilder<T> Finally(Block action);
     }
-    static class TryBuilder<T> implements Catch<T>, Finally<T> {
+    public static class TryBuilder<T> implements Catch<T>, Finally<T> {
 
         private Action<T> mainAction;
 
